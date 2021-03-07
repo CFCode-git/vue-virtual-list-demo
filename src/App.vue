@@ -3,7 +3,8 @@
     <router-link to="/">Home</router-link> |
     <router-link to="/page-a">PageA</router-link> |
     <router-link to="/page-b/index">PageB</router-link> |
-    <router-link to="/virtualList">virtual list</router-link>
+    <router-link to="/virtualList">virtual list</router-link> |
+    <router-link to="/demo">Demo</router-link>
     <div>
       <router-view></router-view>
     </div>

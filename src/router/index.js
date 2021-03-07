@@ -15,6 +15,8 @@ const PageB = () =>
   import(/* webpackChunkName:'page-b' */ "../views/PageB.vue");
 const virtualList = () =>
   import(/* webpackChunkName:'virtual-list' */ "../views/virtualList.vue");
+const Demo = () =>
+  import(/* webpackChunkName:'virtual-list' */ "../views/Demo.vue");
 
 const routes = [
   {
@@ -48,6 +50,11 @@ const routes = [
     //   console.log(from);
     //   next({ msg: "hello" });
     // },
+  },
+  {
+    path: "/demo",
+    name: "Demo",
+    component: Demo,
   },
 ];
 

@@ -1,104 +1,88 @@
 <template>
-  <div>
-    PageC
-    <button @click="toPageB">to Page B</button>
-    <div class="calculator">
-      <div class="count">{{ count }}</div>
-      <div class="operator">
-        <button @click="add1">+1</button>
-        <button @click="add2">+2</button>
-        <button @click="add3">+3</button>
-        <button @click="add4">+4</button>
-        <button @click="add5">+5</button>
-        <button @click="subtractC">-</button>
+  <div class="list-view" @scroll="handleScroll">
+    <div class="list-view-phantom" :style="{ height: contentHeight }"></div>
+    <div ref="content" class="list-view-content">
+      <div
+        class="list-view-item"
+        :style="{ height: itemHeight + 'px' }"
+        v-for="item in visibleData"
+      >
+        {{ item.value }}
       </div>
     </div>
   </div>
 </template>
-<script>
-import { mapActions } from "vuex";
 
+<script>
 export default {
-  name: "PageC",
-  data() {
-    return {
-      xxx: "fromPageC",
-    };
+  name: "ListView",
+  props: {
+    data: {
+      type: Array,
+      required: true,
+    },
+    itemHeight: {
+      type: Number,
+      default: 30,
+    },
   },
   computed: {
-    count() {
-      return this.$store.state.c.Count;
+    contentHeight() {
+      return this.data.length * this.itemHeight + "px";
     },
+  },
+  mounted() {
+    this.updateVisibleData();
+  },
+  data() {
+    return {
+      visibleData: [],
+    };
   },
   methods: {
-    toPageB() {
-      this.$router.push({ name: "PageB", params: { xxx: "fromPageC" } });
+    // 更新可见元素
+    updateVisibleData(scrollTop) { 
+      scrollTop = scrollTop || 0;
+      const visibleCount = Math.ceil(this.$el.clientHeight / this.itemHeight);
+      const start = Math.floor(scrollTop / this.itemHeight);
+      const end = start + visibleCount;
+      this.visibleData = this.data.slice(start, end);
+      this.$refs.content.style.webkitTransform = `translate3d(0,${start *
+        this.itemHeight}px,0`;
     },
-    ...mapActions({
-      add1: "actionA",
-      add2: "actionB",
-    }),
-    add3() {
-      this.$store.dispatch({
-        type:'actionC',
-        num:3
-      })
-    },
-    add4() {
-      this.$store.dispatch("actionD").then(() => {
-        console.log("actionD 会得到一个promise");
-      });
-    },
-    add5() {
-      this.$store.dispatch("actionE");
-    },
-    subtractC() {
-      this.$store.commit("subtractC", { num: 1 });
+    // 处理鼠标滚动事件
+    handleScroll() {
+      const scrollTop = this.$el.scrollTop;
+      this.updateVisibleData(scrollTop);
     },
   },
-  // beforeRouteEnter (to, from, next) {
-  //   console.log('in page c beforeRouteEnter')
-  //   console.log(to)
-  //   console.log(from)
-  //   next((vm)=>{
-  //     console.log(vm)
-  //   })
-  // },
-  // beforeRouteUpdate (to, from, next) {
-  //   console.log('in page c beforeRouteUpdate')
-  //   console.log(to)
-  //   console.log(from)
-  //   console.log(this.xxx)
-  //   next()
-  // },
-  // beforeRouteLeave (to, from, next) {
-  //   console.log('in page c beforeRouteLeave')
-  //   console.log(to)
-  //   console.log(from)
-  //   console.log(this.xxx)
-  //   next()
-  // }
 };
 </script>
+
 <style lang="scss">
-.calculator {
-  border: 1px solid blue;
-  margin: 24px;
-  background: yellow;
-  .count {
-    border: 1px solid #ddd;
-    padding: 24px;
-    margin: 24px;
-    font-size: 24px;
-    color: blue;
-  }
-  .operator {
-    > button {
-      width: 64px;
-      height: 32px;
-      font-size: 24px;
-      margin: 12px;
-    }
-  }
+.list-view { /* 列表元素 */
+  height: 400px;
+  overflow: auto;
+  position: relative;
+  border: 1px solid #aaa;
+}
+.list-view-phantom { /* 不可见元素用于撑起整个列表, 使得列表的滚动条出现 */ 
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: -1;
+}
+.list-view-content { /* 列表的可见元素使用绝对定位 */
+  left: 0;
+  right: 0;
+  top: 0;
+  position: absolute;
+}
+.list-view-item {
+  padding: 5px;
+  color: #666;
+  line-height: 30px;
+  box-sizing: border-box;
 }
 </style>
