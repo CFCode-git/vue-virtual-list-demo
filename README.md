@@ -1,2 +1,1 @@
-vue2 vuex demo
-
+https://zhuanlan.zhihu.com/p/34585166
