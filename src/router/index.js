@@ -13,14 +13,14 @@ const PageA = () =>
   import(/* webpackChunkName:'page-a' */ "../views/PageA.vue");
 const PageB = () =>
   import(/* webpackChunkName:'page-b' */ "../views/PageB.vue");
-const PageC = () =>
-  import(/* webpackChunkName:'page-c' */ "../views/PageC.vue");
+const virtualList = () =>
+  import(/* webpackChunkName:'virtual-list' */ "../views/virtualList.vue");
 
 const routes = [
   {
     path: "/ccc",
     // redirect:{name:'PageC'}
-    redirect: "/page-c",
+    redirect: "/virtualList",
   },
   {
     path: "/",
@@ -39,9 +39,9 @@ const routes = [
     component: PageB,
   },
   {
-    path: "/page-c",
-    name: "PageC",
-    component: PageC,
+    path: "/virtualList",
+    name: "virtualList",
+    component: virtualList,
     // beforeEnter: (to, from, next) => {
     //   console.log("page c before enter");
     //   console.log(to);

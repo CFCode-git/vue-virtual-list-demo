@@ -22,7 +22,7 @@ export default {
   methods: {
     toPageC() {
       this.$router.push({
-        path: "/page-c",
+        path: "/virtualList",
         query: { name: "hihi", age: "18" },
       });
     },
