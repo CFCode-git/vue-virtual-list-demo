@@ -1,6 +1,6 @@
 <template>
   <div class="demo">
-    <virtual-list :data="data"/>
+    <virtual-list :data="data" :item-size-getter="itemSizeGetter" />
   </div>
 </template>
 
@@ -17,8 +17,13 @@ export default {
       data.push({ value: i });
     }
     return {
-      data
+      data,
     };
+  },
+  methods: {
+    itemSizeGetter(item) { // 根据 item 计算每一个高度
+      return 30 + (item.value % 10);
+    },
   },
 };
 </script>
