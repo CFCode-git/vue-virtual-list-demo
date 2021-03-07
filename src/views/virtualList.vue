@@ -1,7 +1,10 @@
 <template>
   <div class="list-view" @scroll="handleScroll">
-    <div class="list-view-phantom" :style="{ height: contentHeight + 'px' }"></div>
-    <div ref="content" class="list-view-content" :style="{height:'100%'}">
+    <div
+      class="list-view-phantom"
+      :style="{ height: contentHeight + 'px' }"
+    ></div>
+    <div ref="content" class="list-view-content" :style="{ height: '100%' }">
       <div
         class="list-view-item"
         v-for="item in visibleData"
@@ -46,16 +49,24 @@ export default {
   data() {
     return {
       visibleData: [],
+      lastMeasuredIndex: -1, // 最后一次计算尺寸 偏移的index
+      startIndex: 0,
+      sizeAndOffsetCache: {},
     };
   },
   methods: {
     // 更新可见元素
-     	updateVisibleData(scrollTop) {
-    	scrollTop = scrollTop || 0;
+    updateVisibleData(scrollTop) {
+      scrollTop = scrollTop || 0;
       const start = this.findNearestItemIndex(scrollTop);
       const end = this.findNearestItemIndex(scrollTop + this.$el.clientHeight);
-      this.visibleData = this.data.slice(start, Math.min(end + 1, this.data.length));
-      this.$refs.content.style.webkitTransform = `translate3d(0, ${ this.getItemSizeAndOffset(start).offset }px, 0)`;
+      this.visibleData = this.data.slice(
+        start,
+        Math.min(end + 1, this.data.length)
+      );
+      this.$refs.content.style.webkitTransform = `translate3d(0, ${
+        this.getItemSizeAndOffset(start).offset
+      }px, 0)`;
     },
     // 处理鼠标滚动事件
     handleScroll() {
@@ -67,7 +78,7 @@ export default {
       const { data, itemSizeGetter } = this;
       let total = 0;
       for (let i = 0, j = data.length; i < j; i++) {
-        const size = itemSizeGetter.call(null, data[i], i);
+        const size = this.getItemSizeAndOffset(i).size;
         // 从下标为0的项开始累加
         // 直到累加的长度 大于等于 scrollTop 或者
         // 说明这一项已经出现在可视区域内了
@@ -79,26 +90,38 @@ export default {
       // 最开始的时候 scrollTop 为 0 , 而第一项是有高度的
       return 0;
     },
+    // 通过索引计算,获取某个列表项相对于整个列表中的top
     getItemSizeAndOffset(index) {
-      // 通过索引计算,获取某个列表项相对于整个列表中的top
-      const { data, itemSizeGetter } = this;
-      let total = 0;
-      for (let i = 0, j = Math.min(index, data.length - 1); i <= j; i++) {
-        const size = itemSizeGetter.call(null, data[i], i);
-        // 一旦 i = j
-        // 说明 i 和 j 在同一位置, total不需要再加size了,即为top
-        if (i === j) {
-          return {
-            offset: total,
-            size,
-          };
-        }
-        total += size;
+      const {
+        data,
+        itemSizeGetter,
+        lastMeasuredIndex,
+        sizeAndOffsetCache,
+      } = this;
+      // 如果用户最后一次滑动位置的index 比当前 index 要大, 说明已经滑动过了, 缓存里面有, 直接用
+      if (lastMeasuredIndex >= index) {
+        return sizeAndOffsetCache[index];
       }
-      return {
-        offset: 0,
-        size: 0,
-      };
+      let offset = 0;
+      // 初始化 lastMeasuredIndex = -1 的时候不执行, mounted之后才执行.
+      // 计算最后一次计算尺寸的offset, 后面的offset以此为基准累加.
+      if (lastMeasuredIndex >= 0) {
+        const lastMeasured = sizeAndOffsetCache[lastMeasuredIndex];
+        if (lastMeasured) {
+          offset = lastMeasured.offset + lastMeasured.size;
+        }
+      }
+      for (let i = lastMeasuredIndex + 1; i <= index; i++) {
+        const item = data[i];
+        const size = itemSizeGetter.call(null, item, i);
+        sizeAndOffsetCache[i] = {
+          size,
+          offset,
+        };
+        offset += size;
+      }
+      this.lastMeasuredIndex = index;
+      return sizeAndOffsetCache[index];
     },
   },
 };
